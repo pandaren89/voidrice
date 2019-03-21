@@ -1,20 +1,25 @@
 #!/bin/sh
-alias ka="killall" \
-	calcurse="calcurse -D ~/.config/calcurse" \
-	p="sudo pacman" \
-	SS="sudo systemctl" \
-	g="git" \
-	e="$EDITOR" \
-	v="$EDITOR" \
-	x="sxiv -ft *" \
-	sdn="sudo shutdown -h now" \
-	ls="lsd" \
-	grep="grep --color=auto" \
-	diff="diff --color=auto" \
-	ccat="highlight --out-format=ansi" \
-	ref="shortcuts >/dev/null; source ~/.config/shortcutrc" \
 
-command -v nvim >/dev/null && alias vim="nvim" vimdiff="nvim -d" # Use neovim for vim if present.
+alias SS="sudo systemctl status"
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+alias ps="ps auxf"
+alias ss="ss -tulpn | cat"
+alias free="free -h"
+
+alias la="ls -a"
+alias ll="ls -l"
+
+alias -- -='cd "$OLDPWD"'
+alias rmd="rm  -rfv"
+alias mx='chmod a+x'
+
+alias topcpu="/bin/ps -eo pcpu,pid,user,args | sort -k 1 -r | head -10"
+alias topmem="/bin/ps -eo pmem,pcpu,vsize,pid,cmd | sort -k 1 -nr | head -10"
+
+command -v nvim >/dev/null && alias vim="nvim" vimdiff="nvim -d"
+command -v lsd >/dev/null && alias ls="lsd"
+command -v htop >/dev/null && alias top="htop"
+command -v ncdu >/dev/null && alias du="ncdu"
 
 extract () {
 	for archive in $*; do
@@ -72,3 +77,28 @@ cpp()
 		}
 	END { print "" }' total_size=$(stat -c '%s' "${1}") count=0
 }
+
+# Pretty print json
+pjson() {
+    echo "$1" | python -m json.tool
+}
+
+# Convert unix timestamp to ISO string
+udate() {
+    echo "$1" | data -d @
+}
+
+# Conver bytes to human readable format
+human() {
+    echo "$1" \
+    | awk 'function convert(x) {
+         s=" B   KiB MiB GiB TiB EiB PiB YiB ZiB"
+         while (x>=1024 && length(s)>1) 
+               {x/=1024; s=substr(s,5)}
+         s=substr(s,1,4)
+         xf=(s==" B  ")?"%5d   ":"%8.2f"
+         return sprintf( xf"%s\n", x, s)
+      }
+      {gsub(/^[0-9]+/, convert($1)); print}'
+}
+
